@@ -3,27 +3,32 @@ var path = require('path');
 const { Client } = require('pg');
 require('dotenv').config();
 
-var connectionString = `postgresql://${process.env.USERA}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DATABASE}`
+var connectionString = `postgresql://${process.env.DB_USER}:${process.env.PASSWORD}@${process.env.HOST}:${process.env.PORT}/${process.env.DATABASE}`
 
 const client = new Client({
   connectionString: connectionString,
 })
-client.connect().catch((err)=> console.error(err))
+client.connect().catch((err) => console.error(err))
 
 var app = express();
 
 app.use(express.urlencoded())
 
 app.post('/login', function (req, res) {
-  console.log(req.body); 
-  client.query('SELECT * FROM USERS', (err, res) => {
+  const text = 'SELECT * FROM USERS WHERE US = $1 AND PASS = $2'
+  const values = [req.body.user, req.body.password]
+  client.query(text, values, (err, resp) => {
     if (err) {
       console.log(err.stack)
     } else {
-      console.log(res.rows)
+      if (resp.rows[0]){
+        res.sendFile(path.join(__dirname + '/entro.html'));
+      }
+      else{
+        res.sendFile(path.join(__dirname + '/noesta.html'));
+      }
     }
-  })  
-  res.sendFile(path.join(__dirname + '/entro.html'));
+  })
 });
 
 app.get('/', function (req, res) {
