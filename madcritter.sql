@@ -13,14 +13,14 @@ CREATE TABLE IF NOT EXISTS userRoles (
   user_a VARCHAR(45) NOT NULL,
   roleID SERIAL,
   idRoleUser INT NOT NULL,
-  PRIMARY KEY (idRoleUser),
+  PRIMARY KEY (roleID),
   CONSTRAINT user_a
     FOREIGN KEY (user_a)
     REFERENCES users (user_a)
     ON DELETE CASCADE 
     ON UPDATE CASCADE ,
   CONSTRAINT role
-    FOREIGN KEY (roleID)
+    FOREIGN KEY (idRoleUser)
     REFERENCES roles (idRoles)
     ON DELETE CASCADE 
     ON UPDATE CASCADE );

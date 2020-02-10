@@ -1,6 +1,23 @@
+<nav class="navbar navbar-light bg-light static-top">
+    <div class="container">
+        <a href="">Home</a>
+        <a href="/user">User</a>
+        <a href="/logout">Log out</a>
+    </div>
+</nav>
 Tasks:
 <ul>
     {{#tasks}}
-        <li><a href="{{id}}">{{id}}</a></li>
+        <li><a href="tasks/{{idtasks}}">{{idtasks}}</a></li>
     {{/tasks}}
 </ul>
+
+{{#isadmin}}
+Projects:
+<ul>
+    <li><a href="projects/add">+ add project</a></li>
+    {{#projes}}
+        <li><a href="projects/{{name}}">{{name}}</a></li>
+    {{/projes}}
+</ul>
+{{/isadmin}}

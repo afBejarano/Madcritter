@@ -14,11 +14,6 @@ const client = new Client({
 client.connect().catch((err) => console.error(err))
 
 var app = express();
-app.set('views', path.join('./html'));
-app.set('layout', 'layout');
-app.set('view engine', 'html');
-app.enable('view cache');
-app.engine('html', hogan);
 app.use(express.urlencoded())
 app.use(cookieParser());
 
@@ -30,8 +25,10 @@ app.post('/login', function (req, res) {
       console.log(err.stack)
     } else {
       if (resp.rows[0]){
-        res.cookie('user',values[0])
-        home(res)
+        const sql = 'SELECT * FROM USERROLES WHERE USER_A = $1 AND IDROLEUSER = 1'
+        const values1 = [req.body.user]
+        var aa;
+        client.query(sql, values1, (err, resp) => {aa = {name:values[0], isadmin : resp.rows[0]? true: false};res.cookie('user',aa); home(res, aa);});
       }
       else{
         res.sendFile(path.join(__dirname + '/html/noesta.html'));
@@ -40,22 +37,38 @@ app.post('/login', function (req, res) {
   })
 });
 
-function home(res){
+function home(res,x){
   var f;
-  data = fs.readFileSync('./html/tasks.html');
+  data = fs.readFileSync('./html/tasks.html' , "utf8");
   template = hogan.compile(data);
-  res.send(template.render({'tasks':[{'id':'hola'},{'id':'hola1'},{'id':'hola2'}]}));
+  const sqlquery = 'SELECT TASKS.IDTASKS FROM TASKS, USERROLES WHERE TASKS.USER_A = USERROLES.IDROLEUSER AND USERROLES.USER_A  = $1'
+  const values = [x.name]
+  client.query(sqlquery, values,(err, resp)=>{
+    if(x.isadmin){
+      var projs;
+      const sql2 = 'SELECT * FROM projects'
+      client.query(sql2,(err,resp2)=>{
+        projs = resp2.rows;
+        console.log(resp2)
+        res.send(template.render({'tasks':resp.rows, isadmin: {projes:projs}}));
+      });
+    }  
+  });
 }
 
+app.get('/logout', function(req, res){
+  res.clearCookie('user');
+  res.sendFile(path.join(__dirname + '/html/index.html'));
+})
+
 app.get('/', function (req, res) {
-  if(req.cookies.user)
-    home(res);
+  var x = req.cookies.user;
+  if(x)
+    home(res, x);
   else
     res.sendFile(path.join(__dirname + '/html/index.html'));
 });
 
-app.listen(6969, function () {
-  console.log('Example app listening on port 6969!');
+app.listen(3000, function () {
+  console.log('Example app listening on port 3000!');
 });
-
-
